@@ -2,4 +2,6 @@
     <string name="app_name">Mars Pics</string>
 
     <string name="no_results_list_view">No data to be shown</string>
+
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

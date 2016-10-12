@@ -10,4 +10,10 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="org.deafsapps.sordomartinezpabloluismarspics.activities.MainActivity">
 
+    <fragment
+        android:id="@+id/fragment_activity_main"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        class="org.deafsapps.sordomartinezpabloluismarspics.fragments.MainFragment"/>
+
 </RelativeLayout>

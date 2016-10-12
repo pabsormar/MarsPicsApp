@@ -24,16 +24,47 @@
 
 package org.deafsapps.sordomartinezpabloluismarspics.activities;
 
+import android.net.Uri;
+import android.nfc.Tag;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 
 import org.deafsapps.sordomartinezpabloluismarspics.R;
+import org.deafsapps.sordomartinezpabloluismarspics.fragments.DetailFragment;
+import org.deafsapps.sordomartinezpabloluismarspics.fragments.MainFragment;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements MainFragment.OnFragmentInteractionListener {
+
+    private static final String DETAIL_FRAGMENT_TAG = DetailFragment.class.getSimpleName();
+    private boolean mTwoPane;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+Log.d(DETAIL_FRAGMENT_TAG, findViewById(R.id.fragment_activity_main_detail) == null ? "Null" : "Not null");
+        if (findViewById(R.id.fragment_activity_main_detail) != null) {
+            // The detail container view will be present only in the landscape layouts
+            // (res/layout-land). If this view is present, then the Activity should be
+            // in two-pane mode.
+            mTwoPane = true;
+            Log.d(DETAIL_FRAGMENT_TAG, "Loading detail Fragment...");
+            //if (savedInstanceState == null) {
+                Log.d(DETAIL_FRAGMENT_TAG, "Loading detail Fragment...");
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_activity_main_detail, new DetailFragment(), DETAIL_FRAGMENT_TAG)
+                        .commit();
+            //}
+
+        } else {
+            mTwoPane = false;
+            getSupportActionBar().setElevation(0f);
+        }
+    }
+
+    @Override
+    public void onFragmentInteraction(Uri uri) {
+
     }
 }
