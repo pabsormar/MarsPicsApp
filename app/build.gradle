@@ -1,12 +1,12 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 24
-    buildToolsVersion "24.0.3"
+    compileSdkVersion rootProject.ext.compileSdkVersion
+    buildToolsVersion rootProject.ext.buildToolsVersion
     defaultConfig {
         applicationId "org.deafsapps.sordomartinezpabloluismarspics"
-        minSdkVersion 17
-        targetSdkVersion 24
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -21,9 +21,15 @@ android {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
-        exclude group: 'com.android.support', module: 'support-annotations'
-    })
-    compile 'com.android.support:appcompat-v7:24.2.1'
-    testCompile 'junit:junit:4.12'
+    // Required -- JUnit 4 framework
+    testCompile "junit:junit:$rootProject.ext.junitVersion"
+    // Optional -- Mockito framework. Required if using Mockito for unit tests
+    testCompile "org.mockito:mockito-core:$rootProject.ext.mockitoVersion"
+    // Optional -- Hamcrest framework
+    testCompile "org.hamcrest:hamcrest-library:$rootProject.ext.hamcrestVersion"
+    // Optional -- Robolectric framework
+    testCompile "org.robolectric:robolectric:$rootProject.ext.robolectricVersion"
+    compile "com.android.support:appcompat-v7:$rootProject.supportLibraryVersion"
+    compile "com.android.support:design:$rootProject.supportLibraryVersion"
+    compile "com.android.support:support-v4:$rootProject.supportLibraryVersion"
 }
