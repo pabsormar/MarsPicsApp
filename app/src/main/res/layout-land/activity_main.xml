@@ -36,11 +36,11 @@
     tools:context="org.deafsapps.sordomartinezpabloluismarspics.activities.MainActivity">
 
     <fragment
+        android:name="org.deafsapps.sordomartinezpabloluismarspics.fragments.MainFragment"
         android:id="@+id/fragment_activity_main"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="1"
-        class="org.deafsapps.sordomartinezpabloluismarspics.fragments.MainFragment"/>
+        android:layout_weight="1" />
     <FrameLayout
         android:id="@+id/fragment_activity_main_detail"
         android:layout_width="0dp"

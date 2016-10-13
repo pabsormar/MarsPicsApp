@@ -25,7 +25,6 @@
 package org.deafsapps.sordomartinezpabloluismarspics.activities;
 
 import android.net.Uri;
-import android.nfc.Tag;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -34,7 +33,7 @@ import org.deafsapps.sordomartinezpabloluismarspics.R;
 import org.deafsapps.sordomartinezpabloluismarspics.fragments.DetailFragment;
 import org.deafsapps.sordomartinezpabloluismarspics.fragments.MainFragment;
 
-public class MainActivity extends AppCompatActivity implements MainFragment.OnFragmentInteractionListener {
+public class MainActivity extends AppCompatActivity implements MainFragment.Callback {
 
     private static final String DETAIL_FRAGMENT_TAG = DetailFragment.class.getSimpleName();
     private boolean mTwoPane;
@@ -43,7 +42,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnFr
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-Log.d(DETAIL_FRAGMENT_TAG, findViewById(R.id.fragment_activity_main_detail) == null ? "Null" : "Not null");
+
         if (findViewById(R.id.fragment_activity_main_detail) != null) {
             // The detail container view will be present only in the landscape layouts
             // (res/layout-land). If this view is present, then the Activity should be
@@ -53,7 +52,7 @@ Log.d(DETAIL_FRAGMENT_TAG, findViewById(R.id.fragment_activity_main_detail) == n
             //if (savedInstanceState == null) {
                 Log.d(DETAIL_FRAGMENT_TAG, "Loading detail Fragment...");
                 getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.fragment_activity_main_detail, new DetailFragment(), DETAIL_FRAGMENT_TAG)
+                        .replace(R.id.fragment_activity_main_detail, DetailFragment.newInstance(null), DETAIL_FRAGMENT_TAG)
                         .commit();
             //}
 
@@ -64,7 +63,7 @@ Log.d(DETAIL_FRAGMENT_TAG, findViewById(R.id.fragment_activity_main_detail) == n
     }
 
     @Override
-    public void onFragmentInteraction(Uri uri) {
+    public void onMainFragmentInteraction(Uri uri) {
 
     }
 }

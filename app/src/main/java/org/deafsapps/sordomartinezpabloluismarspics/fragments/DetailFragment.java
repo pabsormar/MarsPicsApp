@@ -26,6 +26,7 @@ package org.deafsapps.sordomartinezpabloluismarspics.fragments;
 
 
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -39,6 +40,16 @@ import org.deafsapps.sordomartinezpabloluismarspics.R;
 public class DetailFragment extends Fragment {
 
     public DetailFragment() {}
+
+    public static DetailFragment newInstance(@Nullable Bundle bundle) {
+        DetailFragment detailFragment = new DetailFragment();
+
+        if (bundle != null) {
+            detailFragment.setArguments(bundle);
+        }
+
+        return detailFragment;
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
