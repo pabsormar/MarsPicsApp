@@ -100,13 +100,13 @@ public class MarsPicsProvider extends ContentProvider {
     @Override
     public Uri insert(@NonNull Uri uri, ContentValues values) {
         final SQLiteDatabase db = mDbHelper.getWritableDatabase();
-        final int match = sUriMatcher.match(uri);
+
         Uri returnUri;
 
         long regId = db.insert(
                 MarsPicsContract.PicItemEntry.TABLE_NAME,
                 null,
-                values);
+                values);System.out.println();
         if (regId > 0) { returnUri = ContentUris.withAppendedId(
                 MarsPicsContract.PicItemEntry.CONTENT_URI, regId); }
         else { throw new SQLException("Failed to insert row into " + uri); }
@@ -190,5 +190,15 @@ public class MarsPicsProvider extends ContentProvider {
         }
 
         return rowsUpdated;
+    }
+
+    public static ContentValues buildContentValuesFromCursor(Cursor cursor) {
+        ContentValues contentValues = new ContentValues();
+
+        while (cursor.moveToNext()) {
+            //contentValues.put
+        }
+
+        return null;
     }
 }

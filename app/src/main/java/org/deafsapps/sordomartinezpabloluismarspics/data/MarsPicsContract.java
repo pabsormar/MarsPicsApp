@@ -54,6 +54,7 @@ public class MarsPicsContract {
         // Table name
         public static final String TABLE_NAME = "pics";
         // Feed item data
+        public static final String COLUMN_ITEM_TAG = "item_tag";
         public static final String COLUMN_ITEM_DATE = "item_date";
         public static final String COLUMN_ITEM_CAMERA_FULL_NAME = "item_camera_full_name";
         public static final String COLUMN_ITEM_IMAGE_LINK = "item_image_link";

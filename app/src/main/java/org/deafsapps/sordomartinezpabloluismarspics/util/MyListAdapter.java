@@ -49,7 +49,6 @@ public class MyListAdapter extends CursorAdapter {
 
     private static final String TAG_MY_LIST_ADAPTER = MyListAdapter.class.getSimpleName();
 
-
     public MyListAdapter(Context context, Cursor cursor) {
         super(context, cursor, false);
     }
@@ -111,7 +110,7 @@ public class MyListAdapter extends CursorAdapter {
 
         MyListAdapterViewHolder(View itemView) {
             mView = itemView.findViewById(R.id.linear_layout_item);
-            mView.setOnClickListener(this);
+            //mView.setOnClickListener(this);
             mTextViewDate = (TextView) itemView.findViewById(R.id.text_date_item);
             mTextViewCameraFullName = (TextView) itemView.findViewById(R.id.text_camera_full_name_item);
             mImageViewImageLink = (ImageView) itemView.findViewById(R.id.image_item);

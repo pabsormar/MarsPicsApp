@@ -91,7 +91,8 @@ public class TestDb {
         );
 
         String[] queriedColumnNames = cursorQuery.getColumnNames();
-        String[] actualColumnNames = {MarsPicsContract.PicItemEntry.COLUMN_ITEM_DATE,
+        String[] actualColumnNames = {MarsPicsContract.PicItemEntry.COLUMN_ITEM_TAG,
+                MarsPicsContract.PicItemEntry.COLUMN_ITEM_DATE,
                 MarsPicsContract.PicItemEntry.COLUMN_ITEM_CAMERA_FULL_NAME,
                 MarsPicsContract.PicItemEntry.COLUMN_ITEM_IMAGE_LINK};
 

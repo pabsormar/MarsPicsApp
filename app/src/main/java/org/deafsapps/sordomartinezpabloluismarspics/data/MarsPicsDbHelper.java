@@ -49,6 +49,7 @@ public class MarsPicsDbHelper extends SQLiteOpenHelper{
         final String SQL_CREATE_PIC_ITEM_TABLE = "CREATE TABLE " +
                 MarsPicsContract.PicItemEntry.TABLE_NAME + " (" +
                 MarsPicsContract.PicItemEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+                MarsPicsContract.PicItemEntry.COLUMN_ITEM_TAG + " INTEGER NOT NULL UNIQUE, " +
                 MarsPicsContract.PicItemEntry.COLUMN_ITEM_DATE + " TEXT NOT NULL, " +
                 MarsPicsContract.PicItemEntry.COLUMN_ITEM_CAMERA_FULL_NAME + " TEXT NOT NULL, " +
                 MarsPicsContract.PicItemEntry.COLUMN_ITEM_IMAGE_LINK + " TEXT NOT NULL);";

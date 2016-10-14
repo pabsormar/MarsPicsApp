@@ -36,13 +36,17 @@ import android.support.v4.app.ListFragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import org.deafsapps.sordomartinezpabloluismarspics.R;
 import org.deafsapps.sordomartinezpabloluismarspics.data.MarsPicsContract;
+import org.deafsapps.sordomartinezpabloluismarspics.util.MarsPicsApiParser;
 import org.deafsapps.sordomartinezpabloluismarspics.util.MyListAdapter;
 
 /**
@@ -56,7 +60,8 @@ import org.deafsapps.sordomartinezpabloluismarspics.util.MyListAdapter;
 public class MainFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private static final String TAG_MAIN_FRAGMENT = MainFragment.class.getSimpleName();
-    private static final int URL_LOADER = 0;
+    private static final int CONTENT_PROVIDER_LOADER = 100;
+    private static final int HTTP_API_LOADER = 200;
 
     private Callback mListener;
     private MyListAdapter mAdapter;
@@ -79,31 +84,16 @@ public class MainFragment extends ListFragment implements LoaderManager.LoaderCa
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
-        MatrixCursor matrixCursor = new MatrixCursor(new String[] {
-                MarsPicsContract.PicItemEntry._ID,
-                MarsPicsContract.PicItemEntry.COLUMN_ITEM_DATE,
-                MarsPicsContract.PicItemEntry.COLUMN_ITEM_CAMERA_FULL_NAME,
-                MarsPicsContract.PicItemEntry.COLUMN_ITEM_IMAGE_LINK}
-        );
-        matrixCursor.addRow(new Object[] {
-                "1",
-                "Date",
-                "Full Camera Name",
-                "http://img.wallpaperfolder.com/f/6640000320AB/peacock-feathers-images-stock-pictures.jpg"}
-        );
-
         final ListView listView = (ListView) rootView.findViewById(android.R.id.list);
-        mAdapter = new MyListAdapter(getActivity(), matrixCursor);
+        mAdapter = new MyListAdapter(getActivity(), null);
 
-        ContentValues contentValues = new ContentValues();
-        contentValues.put(MarsPicsContract.PicItemEntry.COLUMN_ITEM_DATE,
-                "Dummy date");
-        contentValues.put(MarsPicsContract.PicItemEntry.COLUMN_ITEM_CAMERA_FULL_NAME,
-                "Dummy camera full name");
-        contentValues.put(MarsPicsContract.PicItemEntry.COLUMN_ITEM_IMAGE_LINK,
-                "http://img.wallpaperfolder.com/f/6640000320AB/peacock-feathers-images-stock-pictures.jpg");
-        Uri uri = getContext().getContentResolver().insert(MarsPicsContract.PicItemEntry.CONTENT_URI, contentValues);
         listView.setAdapter(mAdapter);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Toast.makeText(getContext(), "onItemClick triggered", Toast.LENGTH_SHORT).show();
+            }
+        });
 
         return rootView;
     }
@@ -111,7 +101,8 @@ public class MainFragment extends ListFragment implements LoaderManager.LoaderCa
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         // Initializes the CursorLoader
-        getLoaderManager().initLoader(URL_LOADER, null, this);
+        getLoaderManager().initLoader(CONTENT_PROVIDER_LOADER, null, this);
+        getLoaderManager().initLoader(HTTP_API_LOADER, null, this).forceLoad();
         super.onActivityCreated(savedInstanceState);
     }
 
@@ -132,25 +123,16 @@ public class MainFragment extends ListFragment implements LoaderManager.LoaderCa
                     + " must implement OnFragmentInteractionListener");
         }
     }
-
     @Override
     public void onDetach() {
         super.onDetach();
         mListener = null;
     }
 
-    /**
-     * Callback invoked when the system has initialized the Loader and is ready to start
-     * the query.
-     *
-     * @param loaderId  the ID value passed to the 'initLoader()' call
-     * @param args  any extra optional parameters
-     * @return  a CursorLoader which will be used to start the query
-     */
     @Override
-    public @Nullable Loader<Cursor> onCreateLoader(int loaderId, Bundle args) {
+    public @Nullable Loader onCreateLoader(int loaderId, Bundle args) {
         switch (loaderId) {
-            case URL_LOADER:
+            case CONTENT_PROVIDER_LOADER:
                 return new CursorLoader(
                         getContext(),
                         MarsPicsContract.PicItemEntry.CONTENT_URI,
@@ -159,32 +141,33 @@ public class MainFragment extends ListFragment implements LoaderManager.LoaderCa
                         null,
                         null
                 );
+            case HTTP_API_LOADER:
+                return new MarsPicsApiParser(getContext());
             default:
                 // An invalid Id was passed in
                 return null;
         }
     }
 
-    /**
-     * Defines the callback that {@Link CursorLoader} calls when it has finished its query
-     *
-     * @param loader
-     * @param cursor  the {@Link Cursor} holding the data to update the adapter
-     */
     @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+    public void onLoadFinished(Loader loader, Cursor cursor) {
         /*
          * Moves the query results into the adapter, causing the ListView fronting this
          * adapter to re-display
          */
-        mAdapter.swapCursor(cursor);
+        switch (loader.getId()) {
+            case CONTENT_PROVIDER_LOADER:
+                mAdapter.swapCursor(cursor);
+            case HTTP_API_LOADER:
+
+                //getContext().getContentResolver().bulkInsert(MarsPicsContract.PicItemEntry.CONTENT_URI,
+                //        new ContentValues[]);
+                Log.e(TAG_MAIN_FRAGMENT, "HTTP query loaded");
+            default:
+                // An invalid Id was passed in
+        }
     }
 
-    /**
-     * Invoked when the {@Link CursorLoader} is being reset
-     *
-     * @param loader
-     */
     @Override
     public void onLoaderReset(Loader loader) {
         /*

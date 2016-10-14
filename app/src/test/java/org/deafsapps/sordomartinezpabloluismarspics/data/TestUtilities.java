@@ -40,7 +40,11 @@ import static org.junit.Assert.assertFalse;
  */
 public class TestUtilities {
     public static ContentValues createDummyContentValuesObject() {
+        final int tag = 1;
+
         ContentValues contentValues = new ContentValues();
+        contentValues.put(MarsPicsContract.PicItemEntry.COLUMN_ITEM_TAG,
+                tag);
         contentValues.put(MarsPicsContract.PicItemEntry.COLUMN_ITEM_DATE,
                 "Dummy date");
         contentValues.put(MarsPicsContract.PicItemEntry.COLUMN_ITEM_CAMERA_FULL_NAME,
@@ -56,6 +60,8 @@ public class TestUtilities {
 
         for (int iter = 0; iter < numInsertions; iter++) {
             ContentValues contentValues = new ContentValues();
+            contentValues.put(MarsPicsContract.PicItemEntry.COLUMN_ITEM_TAG,
+                    iter);
             contentValues.put(MarsPicsContract.PicItemEntry.COLUMN_ITEM_DATE,
                     "Dummy date " + iter);
             contentValues.put(MarsPicsContract.PicItemEntry.COLUMN_ITEM_CAMERA_FULL_NAME,
