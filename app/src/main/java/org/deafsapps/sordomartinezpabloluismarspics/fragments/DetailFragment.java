@@ -31,8 +31,12 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+
+import com.squareup.picasso.Picasso;
 
 import org.deafsapps.sordomartinezpabloluismarspics.R;
+import org.deafsapps.sordomartinezpabloluismarspics.activities.MainActivity;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -55,6 +59,14 @@ public class DetailFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_detail, container, false);
+        View viewRoot = inflater.inflate(R.layout.fragment_detail, container, false);
+
+        if (getArguments() != null) {
+            Picasso.with(getContext())
+                    .load(getArguments().getString(MainActivity.KEY_IMAGE_LINK))
+                    .into((ImageView) viewRoot.findViewById(R.id.image_fragment_detail));
+        }
+
+        return viewRoot;
     }
 }

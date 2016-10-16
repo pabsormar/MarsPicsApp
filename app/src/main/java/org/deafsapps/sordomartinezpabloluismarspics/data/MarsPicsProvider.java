@@ -30,6 +30,7 @@ import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.SQLException;
+import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.support.annotation.NonNull;
@@ -46,6 +47,7 @@ public class MarsPicsProvider extends ContentProvider {
     private static final int PIC_ENTRY = 100;
     private static final int PIC_ENTRIES = 200;
     private static final UriMatcher sUriMatcher = buildUriMatcher();
+
     // The UriMatcher will match each URI so different actions can be performed
     static UriMatcher buildUriMatcher() {
         final UriMatcher matcher = new UriMatcher(UriMatcher.NO_MATCH);
@@ -102,14 +104,19 @@ public class MarsPicsProvider extends ContentProvider {
         final SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
         Uri returnUri;
+        long regId = insertOrUpdateByTag(
+                db,
+                MarsPicsContract.PicItemEntry.CONTENT_URI,
+                values
+        );
 
-        long regId = db.insert(
-                MarsPicsContract.PicItemEntry.TABLE_NAME,
-                null,
-                values);System.out.println();
-        if (regId > 0) { returnUri = ContentUris.withAppendedId(
-                MarsPicsContract.PicItemEntry.CONTENT_URI, regId); }
-        else { throw new SQLException("Failed to insert row into " + uri); }
+        // Watch out! 'update' and 'insert' return values do not mean the same
+        if (regId > 0) {
+            returnUri = ContentUris.withAppendedId(
+                    MarsPicsContract.PicItemEntry.CONTENT_URI, regId);
+        } else {
+            throw new SQLException("Failed to insert row into " + uri);
+        }
 
         // Notify registered observers that a row was updated and attempt to sync
         getContext().getContentResolver().notifyChange(uri, null);
@@ -121,22 +128,21 @@ public class MarsPicsProvider extends ContentProvider {
     public int bulkInsert(Uri uri, ContentValues[] contentValues) {
         final SQLiteDatabase db = mDbHelper.getWritableDatabase();
         final int match = sUriMatcher.match(uri);
-        int rowsInserted = 0;
+        int rowsAffected = 0;
 
         switch (match) {
             case PIC_ENTRIES:
                 db.beginTransaction();
                 try {
                     for (ContentValues cv : contentValues) {
-                        long newID = db.insert(
-                                MarsPicsContract.PicItemEntry.TABLE_NAME,
-                                null,
+                        long newID = insertOrUpdateByTag(
+                                db,
+                                MarsPicsContract.PicItemEntry.CONTENT_URI,
                                 cv
                         );
-                        if (newID > 0) {
-                            rowsInserted++;
-                        }
-                        else {
+                        if (newID != -1) {
+                            rowsAffected++;
+                        } else {
                             throw new SQLException("Failed to insert row into " + uri);
                         }
                     }
@@ -146,7 +152,7 @@ public class MarsPicsProvider extends ContentProvider {
                     db.endTransaction();
                 }
 
-                return rowsInserted;
+                return rowsAffected;
             default:
                 return super.bulkInsert(uri, contentValues);
         }
@@ -156,7 +162,16 @@ public class MarsPicsProvider extends ContentProvider {
     public Cursor query(Uri uri, String[] projection, String selection,
                         String[] selectionArgs, String sortOrder) {
         final SQLiteDatabase db = mDbHelper.getReadableDatabase();
+        final int match = sUriMatcher.match(uri);
         Cursor retCursor;
+
+        switch (match) {
+            case PIC_ENTRY:
+                selection = MarsPicsContract.PicItemEntry._ID + "=?";
+                selectionArgs = new String[]{ String.valueOf(ContentUris.parseId(uri)) };
+                break;
+            default:
+        }
 
         retCursor = db.query(
                 MarsPicsContract.PicItemEntry.TABLE_NAME,
@@ -167,7 +182,10 @@ public class MarsPicsProvider extends ContentProvider {
                 null,
                 sortOrder
         );
-        retCursor.setNotificationUri(getContext().getContentResolver(), uri);
+
+        if (retCursor != null) {
+            retCursor.setNotificationUri(getContext().getContentResolver(), uri);
+        }
 
         return retCursor;
     }
@@ -192,13 +210,27 @@ public class MarsPicsProvider extends ContentProvider {
         return rowsUpdated;
     }
 
-    public static ContentValues buildContentValuesFromCursor(Cursor cursor) {
-        ContentValues contentValues = new ContentValues();
+    public long insertOrUpdateByTag(SQLiteDatabase db, Uri uri, ContentValues values) {
+        long rows;
 
-        while (cursor.moveToNext()) {
-            //contentValues.put
+        try {
+            // The insertion will fail if the row inserted has an already used TAG (UNIQUE)
+            rows = db.insertOrThrow(
+                    MarsPicsContract.PicItemEntry.TABLE_NAME,
+                    null,
+                    values
+            );
+        } catch (SQLiteConstraintException e) {
+            rows = this.update(uri,
+                    values,
+                    MarsPicsContract.PicItemEntry.COLUMN_ITEM_TAG + "=?",
+                    new String[]{values.getAsString(MarsPicsContract.PicItemEntry.COLUMN_ITEM_TAG)}
+            );
+            if (rows == 0) {
+                throw e;
+            }
         }
 
-        return null;
+        return rows;
     }
 }

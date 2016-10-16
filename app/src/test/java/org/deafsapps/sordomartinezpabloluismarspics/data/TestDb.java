@@ -109,7 +109,7 @@ public class TestDb {
     @Test
     public void testInsertDbEntry() {
         // Create feed values
-        ContentValues feedEntryValues = TestUtilities.createDummyContentValuesObject();
+        ContentValues feedEntryValues = Utilities.createDummyContentValuesObject();
         // Insert ContentValues into database and get a row ID back
         long feedEntryRowId = mDb.insert(
                 MarsPicsContract.PicItemEntry.TABLE_NAME,
@@ -137,7 +137,7 @@ public class TestDb {
     @Test
     public void testDeleteDbEntry() {
         // Create feed values
-        ContentValues feedEntryValues = TestUtilities.createDummyContentValuesObject();
+        ContentValues feedEntryValues = Utilities.createDummyContentValuesObject();
         // Insert ContentValues into database and get a row ID back
         long feedEntryRowId = mDb.insert(
                 MarsPicsContract.PicItemEntry.TABLE_NAME,

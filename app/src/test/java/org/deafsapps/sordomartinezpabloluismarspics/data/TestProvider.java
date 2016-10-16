@@ -60,7 +60,8 @@ public class TestProvider {
     }
 
     @After
-    public void tearDown() {}
+    public void tearDown() {
+    }
 
     @Test
     public void testGetType() {
@@ -100,9 +101,15 @@ public class TestProvider {
     }
 
     @Test
+    /**
+     * The tested {@link ContentResolver#insert(Uri, ContentValues)} method actually
+     * calls internally the {@link android.database.sqlite.SQLiteDatabase#insertOrThrow(String,
+     * String, ContentValues)} method. Thus, both insertion and update are tested below.
+     */
     public void testInsert() {
-        ContentValues feedEntryValues = TestUtilities.createDummyContentValuesObject();
+        ContentValues feedEntryValues = Utilities.createDummyContentValuesObject();
 
+        // Checks the 'insert' process
         Uri feedInsertUri = mResolver.insert(
                 MarsPicsContract.PicItemEntry.CONTENT_URI,
                 feedEntryValues
@@ -122,7 +129,17 @@ public class TestProvider {
         // Checks that the Cursor is not empty
         assertTrue("Empty cursor returned", cursorFromQuery.moveToFirst());
         // Checks that the Cursor values match
-        TestUtilities.validateCursor(cursorFromQuery, feedEntryValues);
+        Utilities.validateCursor(cursorFromQuery, feedEntryValues);
+
+        // Checks the 'update' process trying to insert a different row with the same TAG value
+        feedEntryValues.put(MarsPicsContract.PicItemEntry.COLUMN_ITEM_DATE, "An alternative date");
+        Uri feedUpdateUri = mResolver.insert(
+                MarsPicsContract.PicItemEntry.CONTENT_URI,
+                feedEntryValues
+        );
+        long updatedNumberOfRows = ContentUris.parseId(feedUpdateUri);
+        // Verify we got a row back
+        assertTrue(updatedNumberOfRows != -1);
 
         cursorFromQuery.close();
     }
@@ -130,7 +147,7 @@ public class TestProvider {
     @Test
     public void testBulkInsert() {
         final int numInsertions = 10;
-        ContentValues[] bulkInsertContentValues = TestUtilities
+        ContentValues[] bulkInsertContentValues = Utilities
                 .createDummyContentValuesSomeObjects(numInsertions);
 
         int insertCount = mResolver.bulkInsert(
@@ -153,7 +170,7 @@ public class TestProvider {
         // and let's make sure they match the ones we created
         cursorFromQuery.moveToFirst();
         for (int idx = 0; idx < numInsertions; idx++, cursorFromQuery.moveToNext() ) {
-            TestUtilities.validateCursor(cursorFromQuery, bulkInsertContentValues[idx]);
+            Utilities.validateCursor(cursorFromQuery, bulkInsertContentValues[idx]);
         }
 
         cursorFromQuery.close();
@@ -161,7 +178,7 @@ public class TestProvider {
 
     @Test
     public void testQuery() {
-        ContentValues feedEntryValues = TestUtilities.createDummyContentValuesObject();
+        ContentValues feedEntryValues = Utilities.createDummyContentValuesObject();
 
         Uri feedInsertUri = mResolver.insert(
                 MarsPicsContract.PicItemEntry.CONTENT_URI,
@@ -183,7 +200,7 @@ public class TestProvider {
         // Checks that the Cursor is not empty
         assertTrue("Empty cursor returned", cursorFromQuery.moveToFirst());
         // Make sure we get the correct cursor out of the database
-        TestUtilities.validateCursor(cursorFromQuery, feedEntryValues);
+        Utilities.validateCursor(cursorFromQuery, feedEntryValues);
 
         cursorFromQuery.close();
     }
@@ -191,7 +208,7 @@ public class TestProvider {
     @Test
     public void testQueries() {
         final int numIter = 10;
-        ContentValues[] feedEntryValues = TestUtilities.createDummyContentValuesSomeObjects(numIter);
+        ContentValues[] feedEntryValues = Utilities.createDummyContentValuesSomeObjects(numIter);
         // Performs several insertions into the database
         for (int iter = 0; iter < numIter; iter++) {
             Uri feedInsertUri = mResolver.insert(
@@ -216,14 +233,14 @@ public class TestProvider {
         // Checks that the Cursor is not empty
         assertTrue("Empty cursor returned", cursorFromQuery.moveToFirst());
         // Make sure we get the correct cursor out of the database
-        //TestUtilities.validateCursor(cursorFromQuery, feedEntryValues);
+        Utilities.validateCursorArray(cursorFromQuery, feedEntryValues);
 
         cursorFromQuery.close();
     }
 
     @Test
     public void testUpdate() {
-        ContentValues feedEntryValues = TestUtilities.createDummyContentValuesObject();
+        ContentValues feedEntryValues = Utilities.createDummyContentValuesObject();
 
         Uri feedInsertUri = mResolver.insert(
                 MarsPicsContract.PicItemEntry.CONTENT_URI,

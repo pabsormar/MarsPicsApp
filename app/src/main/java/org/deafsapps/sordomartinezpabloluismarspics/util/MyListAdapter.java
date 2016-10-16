@@ -30,9 +30,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.CursorAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 
@@ -63,6 +65,7 @@ public class MyListAdapter extends CursorAdapter {
         MyListAdapterViewHolder viewHolder = new MyListAdapterViewHolder(rowView);
         rowView.setTag(viewHolder);
 
+
         return rowView;
     }
 
@@ -89,7 +92,7 @@ public class MyListAdapter extends CursorAdapter {
     /*
      * Creating a 'ViewHolder' to speed up the performance
      */
-    private static class MyListAdapterViewHolder implements View.OnClickListener {
+    private static class MyListAdapterViewHolder {
 
         private View mView;
         private TextView mTextViewDate;
@@ -110,17 +113,9 @@ public class MyListAdapter extends CursorAdapter {
 
         MyListAdapterViewHolder(View itemView) {
             mView = itemView.findViewById(R.id.linear_layout_item);
-            //mView.setOnClickListener(this);
             mTextViewDate = (TextView) itemView.findViewById(R.id.text_date_item);
             mTextViewCameraFullName = (TextView) itemView.findViewById(R.id.text_camera_full_name_item);
             mImageViewImageLink = (ImageView) itemView.findViewById(R.id.image_item);
-        }
-
-        @Override
-        public void onClick(View whichView) {
-            if (BuildConfig.DEBUG) {
-                Log.d(TAG_MY_LIST_ADAPTER, "onClick");
-            }
         }
     }
 }

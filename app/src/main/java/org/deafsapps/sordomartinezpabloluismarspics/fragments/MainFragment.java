@@ -24,14 +24,13 @@
 
 package org.deafsapps.sordomartinezpabloluismarspics.fragments;
 
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.database.MatrixCursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.ListFragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
@@ -40,21 +39,22 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.Toast;
 
+import org.deafsapps.sordomartinezpabloluismarspics.BuildConfig;
 import org.deafsapps.sordomartinezpabloluismarspics.R;
 import org.deafsapps.sordomartinezpabloluismarspics.data.MarsPicsContract;
 import org.deafsapps.sordomartinezpabloluismarspics.util.MarsPicsApiParser;
 import org.deafsapps.sordomartinezpabloluismarspics.util.MyListAdapter;
+import org.deafsapps.sordomartinezpabloluismarspics.util.Utility;
 
 /**
  * Created by ${USER} on ${DATE}.
  *
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link MainFragment.Callback} interface
+ * A simple {@link ListFragment} subclass. This object already includes some convenient
+ * interfaces and inherits such as the overridden method
+ * {@link ListFragment#onListItemClick(ListView, View, int, long)}.
+ * Activities that contain this fragment must implement the {@link MainFragment.Callback} interface
  * to handle interaction events with the hosting Activity.
  */
 public class MainFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
@@ -62,9 +62,12 @@ public class MainFragment extends ListFragment implements LoaderManager.LoaderCa
     private static final String TAG_MAIN_FRAGMENT = MainFragment.class.getSimpleName();
     private static final int CONTENT_PROVIDER_LOADER = 100;
     private static final int HTTP_API_LOADER = 200;
+    private static final String KEY_NUM_PAGE = "KEY_NUM_PAGE";
 
     private Callback mListener;
     private MyListAdapter mAdapter;
+    private long mNumPage = 0;
+    private final long mNumListItems = 20;
 
     public MainFragment() {}
 
@@ -82,18 +85,10 @@ public class MainFragment extends ListFragment implements LoaderManager.LoaderCa
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+        final View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
-        final ListView listView = (ListView) rootView.findViewById(android.R.id.list);
         mAdapter = new MyListAdapter(getActivity(), null);
-
-        listView.setAdapter(mAdapter);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Toast.makeText(getContext(), "onItemClick triggered", Toast.LENGTH_SHORT).show();
-            }
-        });
+        setListAdapter(mAdapter);
 
         return rootView;
     }
@@ -102,17 +97,10 @@ public class MainFragment extends ListFragment implements LoaderManager.LoaderCa
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         // Initializes the CursorLoader
         getLoaderManager().initLoader(CONTENT_PROVIDER_LOADER, null, this);
-        getLoaderManager().initLoader(HTTP_API_LOADER, null, this).forceLoad();
+        getLoaderManager().initLoader(HTTP_API_LOADER, null, this);
         super.onActivityCreated(savedInstanceState);
     }
 
-    /*
-        public void onButtonPressed(Uri uri) {
-            if (mListener != null) {
-                mListener.onFragmentInteraction(uri);
-            }
-        }
-    */
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
@@ -130,6 +118,15 @@ public class MainFragment extends ListFragment implements LoaderManager.LoaderCa
     }
 
     @Override
+    public void onListItemClick(ListView l, View v, int position, long id) {
+        super.onListItemClick(l, v, position, id);
+        mListener.onMainFragmentInteraction(ContentUris.withAppendedId(
+                MarsPicsContract.PicItemEntry.CONTENT_URI,
+                mNumPage * mNumListItems + position)
+        );
+    }
+
+    @Override
     public @Nullable Loader onCreateLoader(int loaderId, Bundle args) {
         switch (loaderId) {
             case CONTENT_PROVIDER_LOADER:
@@ -137,8 +134,9 @@ public class MainFragment extends ListFragment implements LoaderManager.LoaderCa
                         getContext(),
                         MarsPicsContract.PicItemEntry.CONTENT_URI,
                         null,
-                        null,
-                        null,
+                        MarsPicsContract.PicItemEntry._ID + ">=? AND " + MarsPicsContract.PicItemEntry._ID + "<?",
+                        new String[] { String.valueOf(mNumPage * mNumListItems),
+                                String.valueOf((1 + mNumPage) * mNumListItems) },
                         null
                 );
             case HTTP_API_LOADER:
@@ -151,18 +149,25 @@ public class MainFragment extends ListFragment implements LoaderManager.LoaderCa
 
     @Override
     public void onLoadFinished(Loader loader, Cursor cursor) {
-        /*
-         * Moves the query results into the adapter, causing the ListView fronting this
-         * adapter to re-display
-         */
+        // Moves the query results into the adapter, causing the ListView fronting this
+        // adapter to re-display
+        if (BuildConfig.DEBUG) { Log.d(TAG_MAIN_FRAGMENT, "Loader Id: " + loader.getId()); }
         switch (loader.getId()) {
             case CONTENT_PROVIDER_LOADER:
+                Log.e(TAG_MAIN_FRAGMENT, "Provider loaded");
                 mAdapter.swapCursor(cursor);
+                break;
             case HTTP_API_LOADER:
-
-                //getContext().getContentResolver().bulkInsert(MarsPicsContract.PicItemEntry.CONTENT_URI,
-                //        new ContentValues[]);
                 Log.e(TAG_MAIN_FRAGMENT, "HTTP query loaded");
+                if (cursor != null) {
+                    ContentValues[] contentValues = Utility.buildContentValuesFromCursor(cursor);
+                    getContext().getContentResolver().bulkInsert(
+                            MarsPicsContract.PicItemEntry.CONTENT_URI,
+                            contentValues
+                    );
+                    mAdapter.notifyDataSetChanged();
+                }
+                break;
             default:
                 // An invalid Id was passed in
         }
@@ -175,6 +180,22 @@ public class MainFragment extends ListFragment implements LoaderManager.LoaderCa
          */
         mAdapter.swapCursor(null);
     }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putLong(KEY_NUM_PAGE, mNumPage);
+    }
+
+    @Override
+    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
+        super.onViewStateRestored(savedInstanceState);
+
+        if (savedInstanceState != null) {
+            mNumPage = savedInstanceState.getLong(KEY_NUM_PAGE);
+        }
+    }
+
 
     /**
      * This interface must be implemented by activities that contain this

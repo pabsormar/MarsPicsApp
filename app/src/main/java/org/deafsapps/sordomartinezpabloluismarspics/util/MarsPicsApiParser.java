@@ -59,13 +59,18 @@ public class MarsPicsApiParser extends AsyncTaskLoader<MatrixCursor> {
     }
 
     @Override
+    protected void onStartLoading() {
+        forceLoad();
+    }
+
+    @Override
     public @Nullable MatrixCursor loadInBackground() {
         try {
             /*
              * Construct the URL for the NASA Open API (NOA) query
              * Possible parameters are available at NOA's page
              * https://api.nasa.gov/index.html#getting-started
-             */
+             */Log.e(TAG_MARS_PICS_API_PARSER, "loadInBackground");
             final String NASA_API_BASE_URL =
                     "https://api.nasa.gov/mars-photos/api/v1/rovers/curiosity/photos?";
             final String NUMBER_ITEMS = "sol";
@@ -84,7 +89,7 @@ public class MarsPicsApiParser extends AsyncTaskLoader<MatrixCursor> {
             myConnection.addRequestProperty("Content-type", "application/json");
 
             int respCode = myConnection.getResponseCode();   // Throws 'IOException'
-            if (BuildConfig.DEBUG) { Log.d(TAG_MARS_PICS_API_PARSER, "The response is: " + respCode); }
+            if (BuildConfig.DEBUG) { Log.e(TAG_MARS_PICS_API_PARSER, "The response is: " + respCode); }
 
             if (respCode == HttpURLConnection.HTTP_OK) {
                 StringBuilder resultJsonString = new StringBuilder();
@@ -124,12 +129,14 @@ public class MarsPicsApiParser extends AsyncTaskLoader<MatrixCursor> {
     private static MatrixCursor parseJsonString(String jsonString) {
         final MatrixCursor matrixCursor = new MatrixCursor(new String[] {
                 MarsPicsContract.PicItemEntry._ID,
+                MarsPicsContract.PicItemEntry.COLUMN_ITEM_TAG,
                 MarsPicsContract.PicItemEntry.COLUMN_ITEM_DATE,
                 MarsPicsContract.PicItemEntry.COLUMN_ITEM_CAMERA_FULL_NAME,
                 MarsPicsContract.PicItemEntry.COLUMN_ITEM_IMAGE_LINK}
         );
         // Photos information.  Each item is an element of the "photos" array.
         final String NASA_API_LIST = "photos";
+        final String NASA_API_TAG = "id";
         final String NASA_API_DATE = "earth_date";
         final String NASA_API_IMG = "img_src";
         final String NASA_API_CAMERA = "camera";
@@ -143,11 +150,13 @@ public class MarsPicsApiParser extends AsyncTaskLoader<MatrixCursor> {
 
             // looping through all photos
             for (int idx = 0; idx < photosArray.length(); idx++) {
+                int tag;
                 String earthDate;
                 String image;
                 String cameraFullName;
 
                 JSONObject photoObject = photosArray.getJSONObject(idx);
+                tag = photoObject.getInt(NASA_API_TAG);
                 earthDate = photoObject.getString(NASA_API_DATE);
                 image = photoObject.getString(NASA_API_IMG);
 
@@ -156,6 +165,7 @@ public class MarsPicsApiParser extends AsyncTaskLoader<MatrixCursor> {
 
                 matrixCursor.addRow(new Object[] {
                         idx,
+                        tag,
                         earthDate,
                         cameraFullName,
                         image}

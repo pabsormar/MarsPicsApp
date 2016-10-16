@@ -9,8 +9,9 @@
     <string name="item_dummy_full_camera_name">Dummy full camera roll</string>
     <string name="image_content_description">Tap on the image to enlarge</string>
 
-    <!-- Fragment placeholder message -->
+    <!-- Fragment messages -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="fragment_detail_no_photo_selected">No photo selected</string>
 
     <!-- NASA Open API personal key -->
     <string name="NASA_OPEN_API_KEY">UHrSCMX2oy0BoLeyHdpsYXs5nlLcW2QYnjKcRXqw</string>

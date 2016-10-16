@@ -26,7 +26,9 @@ package org.deafsapps.sordomartinezpabloluismarspics.data;
 
 import android.content.ContentValues;
 import android.database.Cursor;
+import android.support.annotation.NonNull;
 
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -38,7 +40,7 @@ import static org.junit.Assert.assertFalse;
  *
  * This test class provides some utilities to be used within the test data package
  */
-public class TestUtilities {
+public class Utilities {
     public static ContentValues createDummyContentValuesObject() {
         final int tag = 1;
 
@@ -56,10 +58,11 @@ public class TestUtilities {
     }
 
     public static ContentValues[] createDummyContentValuesSomeObjects(int numInsertions) {
-        ContentValues[] returnContentValues = new ContentValues[numInsertions];
+        final ContentValues[] returnContentValues = new ContentValues[numInsertions];
+        ContentValues contentValues;
 
         for (int iter = 0; iter < numInsertions; iter++) {
-            ContentValues contentValues = new ContentValues();
+            contentValues = new ContentValues();
             contentValues.put(MarsPicsContract.PicItemEntry.COLUMN_ITEM_TAG,
                     iter);
             contentValues.put(MarsPicsContract.PicItemEntry.COLUMN_ITEM_DATE,
@@ -75,17 +78,51 @@ public class TestUtilities {
         return returnContentValues;
     }
 
-    // Checks whether the Cursor values are equal to those expected
-    public static void validateCursor(Cursor cursorFromQuery, ContentValues feedEntryValues) {
-        Set<Map.Entry<String, Object>> expectedValues = feedEntryValues.valueSet();
-        for (Map.Entry<String, Object> entry : expectedValues) {
-            String columnName = entry.getKey();
-            int idx = cursorFromQuery.getColumnIndex(columnName);
+    /**
+     * Checks whether the Cursor values are equal to those expected
+     *
+     * @param cursorFromQuery  the {@link Cursor} just queried
+     * @param feedEntryValues  the {@link ContentValues} that should have been fetched
+     */
+    public static void validateCursor(@NonNull Cursor cursorFromQuery, @NonNull ContentValues feedEntryValues) {
+
+        Set<Map.Entry<String, Object>> setContentValues = feedEntryValues.valueSet();
+        Iterator itr = setContentValues.iterator();
+
+        while (itr.hasNext()) {
+            Map.Entry entry = (Map.Entry) itr.next();
+            String columnName = entry.getKey().toString();
+            final int idx = cursorFromQuery.getColumnIndex(columnName);
             assertFalse("Column '" + columnName + "' not found ", idx == -1);
-            String expectedValue = entry.getValue().toString();
-            assertEquals("Value '" + cursorFromQuery.getString(idx) +
+
+            final String expectedValue = entry.getValue().toString();
+            final String actualValue = cursorFromQuery.getString(idx);
+            assertEquals("Value '" + actualValue +
                     "' did not match the expected value '" +
-                    expectedValue + "'", expectedValue, cursorFromQuery.getString(idx));
+                    expectedValue + "'", expectedValue, actualValue);
+        }
+    }
+
+    /**
+     * Checks whether the array of Cursor values are equal to those expected
+     *
+     * @param cursorFromQuery  the {@link Cursor} just queried
+     * @param feedEntryValues  the {@link ContentValues} array that should have been fetched
+     */
+    public static void validateCursorArray(Cursor cursorFromQuery, ContentValues[] feedEntryValues) {
+        try {
+            if (cursorFromQuery.getCount() == feedEntryValues.length) {
+                if(cursorFromQuery.moveToFirst()) {
+                    for (int idx = 0; idx < cursorFromQuery.getCount(); idx++) {
+                        cursorFromQuery.moveToPosition(idx);
+                        validateCursor(cursorFromQuery, feedEntryValues[idx]);
+                    }
+                }
+            } else {
+                throw new Exception("Both input arguments must have the same size/length");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

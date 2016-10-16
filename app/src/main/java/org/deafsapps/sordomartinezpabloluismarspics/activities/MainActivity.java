@@ -24,18 +24,29 @@
 
 package org.deafsapps.sordomartinezpabloluismarspics.activities;
 
+import android.content.ContentUris;
+import android.database.Cursor;
 import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.squareup.picasso.Picasso;
 
 import org.deafsapps.sordomartinezpabloluismarspics.R;
+import org.deafsapps.sordomartinezpabloluismarspics.data.MarsPicsContract;
 import org.deafsapps.sordomartinezpabloluismarspics.fragments.DetailFragment;
 import org.deafsapps.sordomartinezpabloluismarspics.fragments.MainFragment;
 
 public class MainActivity extends AppCompatActivity implements MainFragment.Callback {
 
     private static final String DETAIL_FRAGMENT_TAG = DetailFragment.class.getSimpleName();
+    public static final String KEY_IMAGE_LINK = "KEY_IMAGE_LINK";
+
     private boolean mTwoPane;
 
     @Override
@@ -50,7 +61,6 @@ public class MainActivity extends AppCompatActivity implements MainFragment.Call
             mTwoPane = true;
             Log.d(DETAIL_FRAGMENT_TAG, "Loading detail Fragment...");
             //if (savedInstanceState == null) {
-                Log.d(DETAIL_FRAGMENT_TAG, "Loading detail Fragment...");
                 getSupportFragmentManager().beginTransaction()
                         .replace(R.id.fragment_activity_main_detail, DetailFragment.newInstance(null), DETAIL_FRAGMENT_TAG)
                         .commit();
@@ -64,6 +74,32 @@ public class MainActivity extends AppCompatActivity implements MainFragment.Call
 
     @Override
     public void onMainFragmentInteraction(Uri uri) {
+        Cursor cursor = getContentResolver().query(
+                uri,
+                new String[] { MarsPicsContract.PicItemEntry.COLUMN_ITEM_IMAGE_LINK },
+                null,
+                null,
+                null
+        );
 
+        if (cursor.moveToFirst()) {
+            String imageLink = cursor.getString(0);
+
+            if (mTwoPane) {
+                Picasso.with(this)
+                        .load(imageLink)
+                        .into((ImageView) findViewById(R.id.image_fragment_detail));
+            } else {
+                Bundle bundle = new Bundle();
+                bundle.putString(KEY_IMAGE_LINK, imageLink);
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_activity_main,
+                                DetailFragment.newInstance(bundle),
+                                DETAIL_FRAGMENT_TAG)
+                        .commit();
+            }
+        }
+
+        cursor.close();
     }
 }
