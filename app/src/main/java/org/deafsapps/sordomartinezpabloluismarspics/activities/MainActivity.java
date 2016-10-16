@@ -24,16 +24,16 @@
 
 package org.deafsapps.sordomartinezpabloluismarspics.activities;
 
-import android.content.ContentUris;
 import android.database.Cursor;
 import android.net.Uri;
+import android.support.v4.app.FragmentManager;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.View;
+import android.view.MenuItem;
 import android.widget.ImageView;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 
@@ -44,8 +44,9 @@ import org.deafsapps.sordomartinezpabloluismarspics.fragments.MainFragment;
 
 public class MainActivity extends AppCompatActivity implements MainFragment.Callback {
 
-    private static final String DETAIL_FRAGMENT_TAG = DetailFragment.class.getSimpleName();
+    private static final String TAG_DETAIL_FRAGMENT = DetailFragment.class.getSimpleName();
     public static final String KEY_IMAGE_LINK = "KEY_IMAGE_LINK";
+    public static final String KEY_ORIENTATION = "KEY_ORIENTATION";
 
     private boolean mTwoPane;
 
@@ -54,18 +55,29 @@ public class MainActivity extends AppCompatActivity implements MainFragment.Call
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        //Toolbar
+        // Gets a reference to the 'Toolbar' and adding it as ActionBar for the 'Activity'
+        final Toolbar appToolbar = (Toolbar) this.findViewById(R.id.toolbar_main_activity);
+        setSupportActionBar(appToolbar);
+
         if (findViewById(R.id.fragment_activity_main_detail) != null) {
             // The detail container view will be present only in the landscape layouts
             // (res/layout-land). If this view is present, then the Activity should be
             // in two-pane mode.
             mTwoPane = true;
-            Log.d(DETAIL_FRAGMENT_TAG, "Loading detail Fragment...");
-            //if (savedInstanceState == null) {
-                getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.fragment_activity_main_detail, DetailFragment.newInstance(null), DETAIL_FRAGMENT_TAG)
-                        .commit();
-            //}
 
+            FragmentManager fm = getSupportFragmentManager();
+            DetailFragment detailFragment = (DetailFragment) fm.findFragmentByTag(TAG_DETAIL_FRAGMENT);
+
+            if (detailFragment == null) {
+
+                Bundle bundle = new Bundle();
+                bundle.putBoolean(KEY_ORIENTATION, mTwoPane);
+                getSupportFragmentManager().beginTransaction()
+                        .add(R.id.fragment_activity_main_detail, DetailFragment.newInstance(bundle),
+                                TAG_DETAIL_FRAGMENT)
+                        .commit();
+            }
         } else {
             mTwoPane = false;
             getSupportActionBar().setElevation(0f);
@@ -84,22 +96,41 @@ public class MainActivity extends AppCompatActivity implements MainFragment.Call
 
         if (cursor.moveToFirst()) {
             String imageLink = cursor.getString(0);
-
+            // In landscape orientation, an image is loaded onto the ImageView
             if (mTwoPane) {
                 Picasso.with(this)
                         .load(imageLink)
                         .into((ImageView) findViewById(R.id.image_fragment_detail));
-            } else {
+            } else {   // In portrait orientation, the current Fragment is replaced
                 Bundle bundle = new Bundle();
+                bundle.putBoolean(KEY_ORIENTATION, mTwoPane);
                 bundle.putString(KEY_IMAGE_LINK, imageLink);
                 getSupportFragmentManager().beginTransaction()
                         .replace(R.id.fragment_activity_main,
                                 DetailFragment.newInstance(bundle),
-                                DETAIL_FRAGMENT_TAG)
+                                TAG_DETAIL_FRAGMENT)
+                        .addToBackStack(null)
                         .commit();
             }
         }
 
         cursor.close();
+    }
+
+    /**
+     * Handles the Activity behaviour when the device back button is tapped. In case there is any
+     * Fragment instance stored in the Back Stack, the top-most member is pulled out and loaded
+     * onto the Activity. Otherwise, the application exits.
+     */
+    @Override
+    public void onBackPressed() {
+        // If there is any 'FragmentTransaction' in the "back stack", it is popped out;
+        // otherwise the common back action is performed.
+        if (this.getSupportFragmentManager().getBackStackEntryCount() > 0) {
+            this.getSupportFragmentManager().popBackStack();
+        }
+        else {
+            super.onBackPressed();
+        }
     }
 }

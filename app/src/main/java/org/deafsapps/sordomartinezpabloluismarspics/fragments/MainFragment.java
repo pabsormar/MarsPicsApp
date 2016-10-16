@@ -27,19 +27,24 @@ package org.deafsapps.sordomartinezpabloluismarspics.fragments;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.pm.ActivityInfo;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.ListFragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import org.deafsapps.sordomartinezpabloluismarspics.BuildConfig;
 import org.deafsapps.sordomartinezpabloluismarspics.R;
@@ -66,6 +71,7 @@ public class MainFragment extends ListFragment implements LoaderManager.LoaderCa
 
     private Callback mListener;
     private MyListAdapter mAdapter;
+    private boolean mTwoPane;
     private long mNumPage = 0;
     private final long mNumListItems = 20;
 
@@ -86,6 +92,17 @@ public class MainFragment extends ListFragment implements LoaderManager.LoaderCa
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         final View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+
+        // If in portrait configuration, some changes are applied to the Toolbar
+        if (!mTwoPane) {
+            final ActionBar mActionBar = ((AppCompatActivity) this.getActivity()).getSupportActionBar();
+            if (mActionBar != null) {
+                // Enables the title visibility
+                mActionBar.setDisplayShowTitleEnabled(true);
+                // Hides "Back arrow" on the top left corner
+                mActionBar.setDisplayHomeAsUpEnabled(false);
+            }
+        }
 
         mAdapter = new MyListAdapter(getActivity(), null);
         setListAdapter(mAdapter);
@@ -118,8 +135,12 @@ public class MainFragment extends ListFragment implements LoaderManager.LoaderCa
     }
 
     @Override
-    public void onListItemClick(ListView l, View v, int position, long id) {
-        super.onListItemClick(l, v, position, id);
+    public void onListItemClick(ListView listView, View view, int position, long id) {
+        super.onListItemClick(listView, view, position, id);
+
+        if (mTwoPane) {
+            view.setSelected(true);
+        }
         mListener.onMainFragmentInteraction(ContentUris.withAppendedId(
                 MarsPicsContract.PicItemEntry.CONTENT_URI,
                 mNumPage * mNumListItems + position)
@@ -195,7 +216,6 @@ public class MainFragment extends ListFragment implements LoaderManager.LoaderCa
             mNumPage = savedInstanceState.getLong(KEY_NUM_PAGE);
         }
     }
-
 
     /**
      * This interface must be implemented by activities that contain this
