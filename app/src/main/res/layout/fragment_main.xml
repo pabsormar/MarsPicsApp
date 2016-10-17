@@ -22,20 +22,22 @@
   ~ SOFTWARE.
   -->
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    tools:context="org.deafsapps.sordomartinezpabloluismarspics.fragments.ListFragment">
+    android:orientation="vertical">
 
     <ListView
-        android:id="@+id/list_view_fragment_list"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-    <TextView android:id="@android:id/empty"
+        android:id="@android:id/list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:drawSelectorOnTop="true" />
+    <TextView
+        android:id="@android:id/empty"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:textAppearance="?android:textAppearanceLarge"
         android:text="@string/no_results_list_view" />
 
-</LinearLayout>
+</FrameLayout>
