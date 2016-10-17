@@ -26,6 +26,7 @@ package org.deafsapps.sordomartinezpabloluismarspics.util;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -49,8 +50,6 @@ import org.deafsapps.sordomartinezpabloluismarspics.data.MarsPicsContract;
  */
 public class MyListAdapter extends CursorAdapter {
 
-    private static final String TAG_MY_LIST_ADAPTER = MyListAdapter.class.getSimpleName();
-
     public MyListAdapter(Context context, Cursor cursor) {
         super(context, cursor, false);
     }
@@ -65,7 +64,6 @@ public class MyListAdapter extends CursorAdapter {
         MyListAdapterViewHolder viewHolder = new MyListAdapterViewHolder(rowView);
         rowView.setTag(viewHolder);
 
-
         return rowView;
     }
 
@@ -75,6 +73,8 @@ public class MyListAdapter extends CursorAdapter {
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
         if (cursor != null) {
+            final int position = cursor.getPosition();
+
             MyListAdapterViewHolder viewHolder = (MyListAdapterViewHolder) view.getTag();
 
             viewHolder.getmTextViewDate().setText(cursor
@@ -86,6 +86,11 @@ public class MyListAdapter extends CursorAdapter {
             Picasso.with(context)
                     .load(cursor.getString(cursor.getColumnIndex(MarsPicsContract.PicItemEntry.COLUMN_ITEM_IMAGE_LINK)))
                     .into(viewHolder.getmImageViewImageLink());
+
+            boolean isOddRow = (position % 2) == 0;   // positions are zero-indexed
+            if (isOddRow) {
+                view.setBackground(ContextCompat.getDrawable(context, R.drawable.bg_odd_key));
+            }
         }
     }
 
@@ -94,7 +99,6 @@ public class MyListAdapter extends CursorAdapter {
      */
     private static class MyListAdapterViewHolder {
 
-        private View mView;
         private TextView mTextViewDate;
         private TextView mTextViewCameraFullName;
         private ImageView mImageViewImageLink;
@@ -112,7 +116,6 @@ public class MyListAdapter extends CursorAdapter {
         }
 
         MyListAdapterViewHolder(View itemView) {
-            mView = itemView.findViewById(R.id.linear_layout_item);
             mTextViewDate = (TextView) itemView.findViewById(R.id.text_date_item);
             mTextViewCameraFullName = (TextView) itemView.findViewById(R.id.text_camera_full_name_item);
             mImageViewImageLink = (ImageView) itemView.findViewById(R.id.image_item);

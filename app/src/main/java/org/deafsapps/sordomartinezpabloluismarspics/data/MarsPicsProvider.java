@@ -34,6 +34,7 @@ import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 /**
  * Created by ${USER} on ${DATE}.
@@ -220,14 +221,16 @@ public class MarsPicsProvider extends ContentProvider {
                     null,
                     values
             );
+            Log.e("", "rows: " + rows);
         } catch (SQLiteConstraintException e) {
-            rows = this.update(uri,
+            rows = this.update(
+                    uri,
                     values,
                     MarsPicsContract.PicItemEntry.COLUMN_ITEM_TAG + "=?",
                     new String[]{values.getAsString(MarsPicsContract.PicItemEntry.COLUMN_ITEM_TAG)}
             );
             if (rows == 0) {
-                throw e;
+//                throw e;
             }
         }
 

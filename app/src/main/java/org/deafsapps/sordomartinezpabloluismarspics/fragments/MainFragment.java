@@ -24,30 +24,24 @@
 
 package org.deafsapps.sordomartinezpabloluismarspics.fragments;
 
-import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.pm.ActivityInfo;
 import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.app.ListFragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import org.deafsapps.sordomartinezpabloluismarspics.BuildConfig;
 import org.deafsapps.sordomartinezpabloluismarspics.R;
+import org.deafsapps.sordomartinezpabloluismarspics.activities.MainActivity;
 import org.deafsapps.sordomartinezpabloluismarspics.data.MarsPicsContract;
 import org.deafsapps.sordomartinezpabloluismarspics.util.MarsPicsApiParser;
 import org.deafsapps.sordomartinezpabloluismarspics.util.MyListAdapter;
@@ -67,11 +61,11 @@ public class MainFragment extends ListFragment implements LoaderManager.LoaderCa
     private static final String TAG_MAIN_FRAGMENT = MainFragment.class.getSimpleName();
     private static final int CONTENT_PROVIDER_LOADER = 100;
     private static final int HTTP_API_LOADER = 200;
-    private static final String KEY_NUM_PAGE = "KEY_NUM_PAGE";
 
     private Callback mListener;
     private MyListAdapter mAdapter;
-    private boolean mTwoPane;
+
+    private boolean isLandscape;
     private long mNumPage = 0;
     private final long mNumListItems = 20;
 
@@ -87,22 +81,22 @@ public class MainFragment extends ListFragment implements LoaderManager.LoaderCa
         return mainFragment;
     }
 
+    public void setLandscape(boolean landscape) {
+        this.isLandscape = landscape;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        Bundle args = getArguments();
+        setLandscape(args.getBoolean(MainActivity.KEY_LANDSCAPE_ORIENTATION));
+        super.onCreate(savedInstanceState);
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         final View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-
-        // If in portrait configuration, some changes are applied to the Toolbar
-        if (!mTwoPane) {
-            final ActionBar mActionBar = ((AppCompatActivity) this.getActivity()).getSupportActionBar();
-            if (mActionBar != null) {
-                // Enables the title visibility
-                mActionBar.setDisplayShowTitleEnabled(true);
-                // Hides "Back arrow" on the top left corner
-                mActionBar.setDisplayHomeAsUpEnabled(false);
-            }
-        }
 
         mAdapter = new MyListAdapter(getActivity(), null);
         setListAdapter(mAdapter);
@@ -115,6 +109,7 @@ public class MainFragment extends ListFragment implements LoaderManager.LoaderCa
         // Initializes the CursorLoader
         getLoaderManager().initLoader(CONTENT_PROVIDER_LOADER, null, this);
         getLoaderManager().initLoader(HTTP_API_LOADER, null, this);
+
         super.onActivityCreated(savedInstanceState);
     }
 
@@ -138,13 +133,10 @@ public class MainFragment extends ListFragment implements LoaderManager.LoaderCa
     public void onListItemClick(ListView listView, View view, int position, long id) {
         super.onListItemClick(listView, view, position, id);
 
-        if (mTwoPane) {
-            view.setSelected(true);
-        }
-        mListener.onMainFragmentInteraction(ContentUris.withAppendedId(
-                MarsPicsContract.PicItemEntry.CONTENT_URI,
-                mNumPage * mNumListItems + position)
-        );
+        listView.smoothScrollToPosition(position);
+        view.setSelected(true);
+
+        mListener.onMainFragmentInteraction(mNumPage * mNumListItems + position);
     }
 
     @Override
@@ -152,14 +144,13 @@ public class MainFragment extends ListFragment implements LoaderManager.LoaderCa
         switch (loaderId) {
             case CONTENT_PROVIDER_LOADER:
                 return new CursorLoader(
-                        getContext(),
-                        MarsPicsContract.PicItemEntry.CONTENT_URI,
-                        null,
-                        MarsPicsContract.PicItemEntry._ID + ">=? AND " + MarsPicsContract.PicItemEntry._ID + "<?",
-                        new String[] { String.valueOf(mNumPage * mNumListItems),
-                                String.valueOf((1 + mNumPage) * mNumListItems) },
-                        null
-                );
+                    getContext(),
+                    MarsPicsContract.PicItemEntry.CONTENT_URI,
+                    null,
+                    MarsPicsContract.PicItemEntry._ID + ">=? AND " + MarsPicsContract.PicItemEntry._ID + "<?",
+                    new String[] { String.valueOf(mNumPage * mNumListItems),
+                            String.valueOf((1 + mNumPage) * mNumListItems) },
+                    null);
             case HTTP_API_LOADER:
                 return new MarsPicsApiParser(getContext());
             default:
@@ -175,11 +166,11 @@ public class MainFragment extends ListFragment implements LoaderManager.LoaderCa
         if (BuildConfig.DEBUG) { Log.d(TAG_MAIN_FRAGMENT, "Loader Id: " + loader.getId()); }
         switch (loader.getId()) {
             case CONTENT_PROVIDER_LOADER:
-                Log.e(TAG_MAIN_FRAGMENT, "Provider loaded");
+                if (BuildConfig.DEBUG) { Log.d(TAG_MAIN_FRAGMENT, "Provider loaded"); }
                 mAdapter.swapCursor(cursor);
                 break;
             case HTTP_API_LOADER:
-                Log.e(TAG_MAIN_FRAGMENT, "HTTP query loaded");
+                if (BuildConfig.DEBUG) { Log.d(TAG_MAIN_FRAGMENT, "HTTP query loaded"); }
                 if (cursor != null) {
                     ContentValues[] contentValues = Utility.buildContentValuesFromCursor(cursor);
                     getContext().getContentResolver().bulkInsert(
@@ -202,21 +193,6 @@ public class MainFragment extends ListFragment implements LoaderManager.LoaderCa
         mAdapter.swapCursor(null);
     }
 
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putLong(KEY_NUM_PAGE, mNumPage);
-    }
-
-    @Override
-    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
-        super.onViewStateRestored(savedInstanceState);
-
-        if (savedInstanceState != null) {
-            mNumPage = savedInstanceState.getLong(KEY_NUM_PAGE);
-        }
-    }
-
     /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated
@@ -224,6 +200,6 @@ public class MainFragment extends ListFragment implements LoaderManager.LoaderCa
      * activity.
      */
     public interface Callback {
-        void onMainFragmentInteraction(Uri uri);
+        void onMainFragmentInteraction(long actualPosition);
     }
 }

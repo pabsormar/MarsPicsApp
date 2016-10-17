@@ -25,44 +25,61 @@
 package org.deafsapps.sordomartinezpabloluismarspics.fragments;
 
 
+import android.content.ContentUris;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 
 import org.deafsapps.sordomartinezpabloluismarspics.R;
 import org.deafsapps.sordomartinezpabloluismarspics.activities.MainActivity;
+import org.deafsapps.sordomartinezpabloluismarspics.data.MarsPicsContract;
 
 /**
  * A simple {@link Fragment} subclass.
  */
 public class DetailFragment extends Fragment {
 
-    private boolean mTwoPane;
+    private boolean isLandscape;
+    private long mPosition = -1;
 
     public DetailFragment() {}
 
     public static DetailFragment newInstance(@NonNull Bundle bundle) {
         DetailFragment detailFragment = new DetailFragment();
-        detailFragment.setArguments(bundle);
+
+        if (bundle != null) {
+            detailFragment.setArguments(bundle);
+        }
 
         return detailFragment;
+    }
+
+    public void setLandscape(boolean landscape) {
+        this.isLandscape = landscape;
+    }
+
+    public void setmPosition(long mPosition) {
+        this.mPosition = mPosition;
     }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         Bundle args = getArguments();
-        mTwoPane = args.getBoolean(MainActivity.KEY_ORIENTATION);
+        setLandscape(args.getBoolean(MainActivity.KEY_LANDSCAPE_ORIENTATION));
+        setmPosition(args.getLong(MainActivity.KEY_LISTVIEW_POSITION));
 
         super.onCreate(savedInstanceState);
     }
@@ -73,29 +90,53 @@ public class DetailFragment extends Fragment {
         // Inflate the layout for this fragment
         final View viewRoot = inflater.inflate(R.layout.fragment_detail, container, false);
 
+        enableDetailFragmentToolbarOptions(true);
+
+        if (mPosition != -1)  {
+            Uri uri = ContentUris.withAppendedId(
+                    MarsPicsContract.PicItemEntry.CONTENT_URI,
+                    mPosition
+            );
+            Cursor cursor = getContext().getContentResolver().query(
+                    uri,
+                    new String[]{MarsPicsContract.PicItemEntry.COLUMN_ITEM_IMAGE_LINK},
+                    null,
+                    null,
+                    null
+            );
+            if (cursor.moveToFirst()) {
+                String imageLink = cursor.getString(0);
+                if (imageLink != null) {
+                    Picasso.with(getContext())
+                            .load(imageLink)
+                            .into((ImageView) viewRoot.findViewById(R.id.image_fragment_detail));
+                }
+            }
+        }
+
+        return viewRoot;
+    }
+
+    /**
+     *
+     *
+     * @param toBeEnabled
+     */
+    private void enableDetailFragmentToolbarOptions(boolean toBeEnabled) {
         // If in portrait configuration, some changes are applied to the Toolbar
-        if (!mTwoPane) {
-            // Report that this fragment would like to participate in populating the options menu
+        if (!isLandscape) {
+            // Reports that this fragment would like to participate in populating the options menu
             // by receiving a call to onCreateOptionsMenu and related methods
             this.setHasOptionsMenu(true);
 
             final ActionBar mActionBar = ((AppCompatActivity) this.getActivity()).getSupportActionBar();
             if (mActionBar != null) {
                 // Disables the title visibility
-                mActionBar.setDisplayShowTitleEnabled(false);
+                mActionBar.setDisplayShowTitleEnabled(!toBeEnabled);
                 // Shows "Back arrow" on the top left corner
-                mActionBar.setDisplayHomeAsUpEnabled(true);
+                mActionBar.setDisplayHomeAsUpEnabled(toBeEnabled);
             }
         }
-
-        String imageLink = getArguments().getString(MainActivity.KEY_IMAGE_LINK);
-        if (imageLink != null) {
-            Picasso.with(getContext())
-                    .load(imageLink)
-                    .into((ImageView) viewRoot.findViewById(R.id.image_fragment_detail));
-        }
-
-        return viewRoot;
     }
 
     @Override
@@ -103,10 +144,11 @@ public class DetailFragment extends Fragment {
         // If 'home' is pressed, the 'onBackPressed()' method from the host 'Activity' is called
         // and 'true' is returned
         if (whichItem.getItemId() == android.R.id.home) {
+            enableDetailFragmentToolbarOptions(false);
             getActivity().onBackPressed();
             return true;
         }
 
-        return super.onOptionsItemSelected(whichItem);
+        return false;
     }
 }

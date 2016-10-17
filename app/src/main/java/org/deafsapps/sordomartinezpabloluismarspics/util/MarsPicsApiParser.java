@@ -49,7 +49,7 @@ import java.net.URL;
  *
  * An {@Link AsyncTaskLoader} subclass to query the NASA Open API
  */
-public class MarsPicsApiParser extends AsyncTaskLoader<MatrixCursor> {
+public class MarsPicsApiParser extends AsyncTaskLoader<MatrixCursor> implements MarsPicsJsonHeaders{
 
     private static final String TAG_MARS_PICS_API_PARSER = MarsPicsApiParser.class.getSimpleName();
     private static final int HTTP_TIMEOUT_MILLIS = 3000;
@@ -70,7 +70,7 @@ public class MarsPicsApiParser extends AsyncTaskLoader<MatrixCursor> {
              * Construct the URL for the NASA Open API (NOA) query
              * Possible parameters are available at NOA's page
              * https://api.nasa.gov/index.html#getting-started
-             */Log.e(TAG_MARS_PICS_API_PARSER, "loadInBackground");
+             */
             final String NASA_API_BASE_URL =
                     "https://api.nasa.gov/mars-photos/api/v1/rovers/curiosity/photos?";
             final String NUMBER_ITEMS = "sol";
@@ -89,7 +89,7 @@ public class MarsPicsApiParser extends AsyncTaskLoader<MatrixCursor> {
             myConnection.addRequestProperty("Content-type", "application/json");
 
             int respCode = myConnection.getResponseCode();   // Throws 'IOException'
-            if (BuildConfig.DEBUG) { Log.e(TAG_MARS_PICS_API_PARSER, "The response is: " + respCode); }
+            if (BuildConfig.DEBUG) { Log.d(TAG_MARS_PICS_API_PARSER, "The response is: " + respCode); }
 
             if (respCode == HttpURLConnection.HTTP_OK) {
                 StringBuilder resultJsonString = new StringBuilder();
@@ -134,13 +134,6 @@ public class MarsPicsApiParser extends AsyncTaskLoader<MatrixCursor> {
                 MarsPicsContract.PicItemEntry.COLUMN_ITEM_CAMERA_FULL_NAME,
                 MarsPicsContract.PicItemEntry.COLUMN_ITEM_IMAGE_LINK}
         );
-        // Photos information.  Each item is an element of the "photos" array.
-        final String NASA_API_LIST = "photos";
-        final String NASA_API_TAG = "id";
-        final String NASA_API_DATE = "earth_date";
-        final String NASA_API_IMG = "img_src";
-        final String NASA_API_CAMERA = "camera";
-        final String NASA_API_FULL_NAME = "full_name";
 
         try {
             JSONObject nasaJson = new JSONObject(jsonString);

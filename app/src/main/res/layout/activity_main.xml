@@ -24,11 +24,12 @@
             app:layout_scrollFlags="scroll|enterAlways"/>
         <!-- The 'layout_scrollFlags' attribute is mandatory to allow the Toolbar to hide and display -->
     </android.support.design.widget.AppBarLayout>
-    <fragment
-        android:id="@+id/fragment_activity_main"
+
+    <FrameLayout
+        android:id="@+id/frame_layout_activity_main"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:name="org.deafsapps.sordomartinezpabloluismarspics.fragments.MainFragment"
+        android:layout_marginBottom="?attr/actionBarSize"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
 </android.support.design.widget.CoordinatorLayout>

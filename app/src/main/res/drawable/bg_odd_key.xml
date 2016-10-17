@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <!--
   ~ MIT License
   ~
@@ -22,28 +23,13 @@
   ~ SOFTWARE.
   -->
 
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="org.deafsapps.sordomartinezpabloluismarspics.fragments.DetailFragment">
-
-    <TextView
-        android:id="@+id/text_no_photo_fragment_detail"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:text="@string/fragment_detail_no_photo_selected"
-        android:textAppearance="@style/Base.TextAppearance.AppCompat.Medium"/>
-    <ImageView
-        android:id="@+id/image_fragment_detail"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_gravity="center"
-        android:scaleType="centerInside"/>
-
-</FrameLayout>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:state_pressed="true"
+        android:drawable="@color/pressed_color"/>
+    <item
+        android:state_selected="true"
+        android:drawable="@color/pressed_color"/>
+    <item
+        android:drawable="@color/odd_item_color" />
+</selector>

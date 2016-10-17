@@ -24,23 +24,11 @@
 
 package org.deafsapps.sordomartinezpabloluismarspics.util;
 
-public interface MarsPicsJsonHeaders
-{
-    static final String MOVIE = "movie";
-    static final String TITLE = "title";
-    static final String YEAR = "year";
-    static final String IDS = "ids";
-    static final String TRAKT = "trakt";
-    static final String SLUG = "slug";
-    static final String IMDB = "imdb";
-    static final String TMDB = "tmdb";
-    static final String OVERVIEW = "overview";
-    static final String TRAILER = "trailer";
-    static final String RATING = "rating";
-    static final String VOTES = "votes";
-    static final String IMAGES = "images";
-    static final String POSTER = "poster";
-    static final String THUMB = "thumb";
-    static final String LOGO = "logo";
-    static final String FULL = "full";
+public interface MarsPicsJsonHeaders {
+    static final String NASA_API_LIST = "photos";
+    static final String NASA_API_TAG = "id";
+    static final String NASA_API_DATE = "earth_date";
+    static final String NASA_API_IMG = "img_src";
+    static final String NASA_API_CAMERA = "camera";
+    static final String NASA_API_FULL_NAME = "full_name";
 }
