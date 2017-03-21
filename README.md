@@ -1,4 +1,3 @@
-# WebCuisine_App
-Skill test for Android developers
+# REST API sample project
 
-Estimated time: 8 hours
+This sample project provides some insights on REST API integration
